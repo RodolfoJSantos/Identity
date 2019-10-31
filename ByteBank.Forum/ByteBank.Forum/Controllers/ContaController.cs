@@ -1,8 +1,7 @@
-﻿using ByteBank.Forum.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using ByteBank.Forum.Models;
+using ByteBank.Forum.ViewModels;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using System.Web.Mvc;
 
 namespace ByteBank.Forum.Controllers
@@ -17,7 +16,24 @@ namespace ByteBank.Forum.Controllers
 		[HttpPost]
 		public ActionResult Registrar(ContaRegistrarViewModel modelo)
 		{
-			return View();
+			if (ModelState.IsValid)
+			{
+				var dbcontext = new IdentityDbContext<UsuarioAplicacao>("DefaultConnection");
+				var userStore = new UserStore<UsuarioAplicacao>(dbcontext);
+				var userManager = new UserManager<UsuarioAplicacao>(userStore);
+
+				var novoUsuario = new UsuarioAplicacao();
+
+				novoUsuario.UserName = modelo.UserName;
+				novoUsuario.Email = modelo.Email;
+				novoUsuario.NomeCompleto = modelo.NomeCompleto;
+
+				userManager.Create(novoUsuario, modelo.Senha);
+
+				RedirectToAction("Index", "Home");
+			}
+			//algo errado devolvemos o modelo
+			return View(modelo);
 		}
 	}
 }
