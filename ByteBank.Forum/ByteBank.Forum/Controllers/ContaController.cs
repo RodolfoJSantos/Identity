@@ -1,13 +1,34 @@
 ﻿using ByteBank.Forum.Models;
 using ByteBank.Forum.ViewModels;
 using Microsoft.AspNet.Identity;
+using Microsoft.Owin.Host.SystemWeb;
+using Microsoft.AspNet.Identity.Owin;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System.Web.Mvc;
+using System.Web;
 
 namespace ByteBank.Forum.Controllers
 {
 	public class ContaController : Controller
 	{
+		private UserManager<UsuarioAplicacao> _userManager; //Backfield
+
+		public UserManager<UsuarioAplicacao> UserManager
+		{
+			get
+			{
+				if (_userManager == null)
+				{
+					var contextoOwin = HttpContext.GetOwinContext();
+				    _userManager = contextoOwin.GetUserManager<UserManager<UsuarioAplicacao>>();
+				}
+				return _userManager;
+			}
+			set
+			{
+				_userManager = value;
+			}
+		}
 		public ActionResult Registrar()
 		{
 			return View();
@@ -18,9 +39,7 @@ namespace ByteBank.Forum.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				var dbcontext = new IdentityDbContext<UsuarioAplicacao>("DefaultConnection");
-				var userStore = new UserStore<UsuarioAplicacao>(dbcontext);
-				var userManager = new UserManager<UsuarioAplicacao>(userStore);
+				
 
 				var novoUsuario = new UsuarioAplicacao();
 
@@ -28,7 +47,7 @@ namespace ByteBank.Forum.Controllers
 				novoUsuario.Email = modelo.Email;
 				novoUsuario.NomeCompleto = modelo.NomeCompleto;
 
-				userManager.Create(novoUsuario, modelo.Senha);
+				UserManager.Create(novoUsuario, modelo.Senha);
 
 				RedirectToAction("Index", "Home");
 			}
